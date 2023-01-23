@@ -6,14 +6,14 @@ import { selectValuesFromStrings } from "../services/exchangerServices";
 import { ISelectValue } from "../types";
 
 interface ExchangeInput {
-  currencyNames: string[],
+  names: string[],
   amount?: string,
   onAmountChange?: Function, 
   onValueChange?: Function,
   defaultOption: string
 }
 
-const ExchangeInput = observer(({ currencyNames = [], defaultOption, amount: _amount, onValueChange, onAmountChange }: ExchangeInput) => {
+const ExchangeInput = observer(({ names = [], defaultOption, amount: _amount, onValueChange, onAmountChange }: ExchangeInput) => {
     const [value, setSelected] = useState<string>("");
     const [amount, setInput] = useState<string>(_amount);
     
@@ -35,7 +35,7 @@ const ExchangeInput = observer(({ currencyNames = [], defaultOption, amount: _am
     }
 
     const getValidList = () => {
-      return currencyNames ? selectValuesFromStrings(currencyNames) : []
+      return names ? selectValuesFromStrings(names) : []
     }
 
     return (

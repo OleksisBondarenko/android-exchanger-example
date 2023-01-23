@@ -6,84 +6,114 @@ import {
     currencyNames,
     uniqueStrings,
 } from "../services/exchangerServices";
-import { ICurrency } from "../types";
+import { IRule, INewRule } from "../types";
 
 
 class Exchanger {
-    counter: number = 0;
-    currencies: ICurrency[] = [];
-    dataCurrencyBaseNames: string[] = [];
-    dataCurrencyNames: string[] = [];
-    dataCurrencies: ICurrency[] = [];
-    baseCurrencyValue: string = "";
-    baseCurrencyAmount: string = "1";
-    currencyValue: string = "";
-    currencyAmount: string = "1";
+    allRules: object = {};
+    selectedRule: string = "";
+
+    rawItems: IRule[] = [];
+    primaryValues: string[] = [];
+    secondaryValues: string[] = [];
+
+    primaryValue: string = "";
+    primaryAmount: string = "1";
+    secondaryValue: string = "";
+    secondaryAmount: string = "1";
 
     constructor() {
         makeAutoObservable(this);
 
-        const currencies = mockExchangerData.exchangeRate as ICurrency[];
+        this.allRules = mockExchangerData;
+        const defaultRule = Object.keys(this.allRules)[0];
+
+        this.updateVariables(this.allRules, defaultRule)
+    }
+
+    updateVariables(allRules, selectedRule) {
+        this.selectedRule = selectedRule;
+
+        const values = allRules[this.selectedRule] as IRule[];
         const baseNames = uniqueStrings(
-            baseCurrencyNames(mockExchangerData.exchangeRate as ICurrency[])
+            baseCurrencyNames(allRules[this.selectedRule] as IRule[])
         );
         const names = uniqueStrings(
-            currencyNames(mockExchangerData.exchangeRate as ICurrency[])
+            currencyNames(allRules[this.selectedRule] as IRule[])
         );
 
-        this.currencies = currencies;
-        this.dataCurrencyBaseNames = baseNames;
-        this.dataCurrencyNames = names;
-        this.baseCurrencyValue = baseNames[0];
-        this.currencyValue = names[0];
+        this.rawItems = values;
+        this.primaryValues = baseNames;
+        this.secondaryValues = names;
+        this.primaryValue = baseNames[0];
+        this.secondaryValue = names[0];
     }
 
-    setCurrencyValue(value) {
-        this.currencyValue = value;
-
-        this.currencyAmount = calculateNewCurrencyPrice(
-            this.currencies,
-            this.baseCurrencyValue,
-            this.currencyValue,
-            this.baseCurrencyAmount
-        );
+    changeRule(ruleName: string) {
+        this.updateVariables(this.allRules, ruleName);
     }
 
-    setCurrencyAmount(amount) {
-        this.currencyAmount = amount;
+    createNewRule(ruleData: INewRule) {
+        const newRule = ruleData as IRule;
+        this.allRules[ruleData.ruleName] = [...this.allRules[ruleData.ruleName], newRule];
 
-        this.baseCurrencyAmount = calculateNewCurrencyPrice(
-            this.currencies,
-            this.baseCurrencyValue,
-            this.currencyValue,
-            this.currencyAmount
-        );
+        this.updateVariables(this.allRules, ruleData.ruleName);
     }
 
-    setBaseCurrencyValue(value) {
-        this.baseCurrencyValue = value;
-
-        this.currencyAmount = calculateNewCurrencyPrice(
-            this.currencies,
-            this.baseCurrencyValue,
-            this.currencyValue,
-            this.baseCurrencyAmount
-        );
+    setValue(value) {
+        this.secondaryValue = value;
+        const isValidCombination = this.rawItems.filter(rule => rule.secondary === this.secondaryValue).filter(rule => rule.primary === this.primaryValue).length > 0;
+        console.log("BTW", isValidCombination);
+        
+        if (isValidCombination) {
+            this.secondaryAmount = calculateNewCurrencyPrice(
+                this.rawItems,
+                this.primaryValue,
+                this.secondaryValue,
+                this.primaryAmount
+            );
+        }
     }
 
-    setBaseCurrencyAmount(amount) {
-        this.baseCurrencyAmount = amount;
+    setAmount(amount) {
+        this.secondaryAmount = amount;
 
-        this.currencyAmount = calculateNewCurrencyPrice(
-            this.currencies,
-            this.baseCurrencyValue,
-            this.currencyValue,
-            this.baseCurrencyAmount
+        this.primaryAmount = calculateNewCurrencyPrice(
+            this.rawItems,
+            this.primaryValue,
+            this.secondaryValue,
+            this.secondaryAmount
         );
     }
 
-    setDataCurrencieNames(currencies) {
-        this.dataCurrencyNames = currencies;
+    setBaseValue(value) {
+        this.primaryValue = value;
+        const isValidCombination = this.rawItems.filter(rule => rule.primary === this.primaryValue).filter(rule => rule.primary === this.primaryValue).length > 0;
+        console.log("BTW", isValidCombination);
+        
+        if (isValidCombination) {
+            this.secondaryAmount = calculateNewCurrencyPrice(
+                this.rawItems,
+                this.primaryValue,
+                this.secondaryValue,
+                this.primaryAmount
+            );
+        }
+    }
+
+    setBaseAmount(amount) {
+        this.primaryAmount = amount;
+
+        this.secondaryAmount = calculateNewCurrencyPrice(
+            this.rawItems,
+            this.primaryValue,
+            this.secondaryValue,
+            this.primaryAmount
+        );
+    }
+
+    setDataNames(currencies) {
+        this.secondaryValues = currencies;
     }
 }
 

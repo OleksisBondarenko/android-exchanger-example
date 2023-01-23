@@ -4,11 +4,13 @@ export interface ISelectValue {
     disabled: boolean;
 }
 
-export interface ICurrency {
-    baseCurrency: string;
-    currency: string;
-    saleRateNB: number;
-    purchaseRateNB: number;
-    saleRate: number;
-    purchaseRate: number;
+export interface IRule {
+    primary: string;
+    secondary: string;
+    primaryAmount: number;
+    secondaryAmount: number;
+}
+
+export interface INewRule extends IRule {
+    ruleName: string
 }

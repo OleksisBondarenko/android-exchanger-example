@@ -1,15 +1,20 @@
 import { observer } from "mobx-react-lite";
-import { Button, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import ExchangeInput from "./ExchangeInput";
-import exchangerStore from "../store/exchangerStore";
-import { selectValueFromString } from "../services/exchangerServices";
+import store from "../store/exchangerStore";
+import { selectValueFromString, selectValuesFromStrings } from "../services/exchangerServices";
 import Loader from "./Loader";
+import CreateNewRule from "./CreateNewRule";
+import { SelectList } from "react-native-dropdown-select-list";
 
 const Main = observer(() => {
   const [isLoaded, setIsLoaded] = useState(false);
   useEffect(() => {
     updateData()
+    console.log(store);
+    
+    
   }, [])
 
   const updateData = () => {
@@ -19,21 +24,25 @@ const Main = observer(() => {
     }, 100);
   }
 
-  const handleBaseCurrencyValueChange = (value) => {
-    exchangerStore.setBaseCurrencyValue(value);
+  const handleBaseValueChange = (value) => {
+    store.setBaseValue(value);
   };
 
-  const handleBaseCurrencyAmountChange = (amount) => {
-    exchangerStore.setBaseCurrencyAmount(amount)
+  const handleBaseAmountChange = (amount) => {
+    store.setBaseAmount(amount)
   };
 
-  const handleCurrencyValueChange = (value) => {
-    exchangerStore.setCurrencyValue(value);
+  const handleValueChange = (value) => {
+    store.setValue(value);
   };
 
-  const handleCurrencyAmountChange = (amount) => {
-    exchangerStore.setCurrencyAmount(amount)
+  const handleAmountChange = (amount) => {
+    store.setAmount(amount)
   };
+
+  const handleRuleChange = (rule) => {
+    
+  }
 
   if (!isLoaded) {
     return <Loader />
@@ -42,31 +51,40 @@ const Main = observer(() => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text >Super powerful exchanger</Text>
-        <TouchableOpacity style={styles.updateButton} onPress={updateData}><Text style={styles.colorWhite}>Update</Text></TouchableOpacity>
+        {/* <Text >Super powerful exchanger</Text>
+        <TouchableOpacity style={styles.updateButton} onPress={updateData}><Text style={styles.colorWhite}>Update</Text></TouchableOpacity> */}
+        {/* <View style={styles.modeButtons}>
+          <TouchableOpacity style={styles.updateButton}  ><Text style={styles.colorWhite}>123</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.updateButton}  ><Text style={styles.colorWhite}>123</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.updateButton}  ><Text style={styles.colorWhite}>123</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.updateButton}  ><Text style={styles.colorWhite}>123</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.updateButton}  ><Text style={styles.colorWhite}>123</Text></TouchableOpacity>
+        </View> */}
+        <SelectList setSelected={handleRuleChange} data={selectValuesFromStrings(Object.keys(store.rawItems))}></SelectList>
+        <CreateNewRule></CreateNewRule>
       </View>
 
       <ExchangeInput
-        currencyNames={exchangerStore.dataCurrencyBaseNames}
-        amount={exchangerStore.baseCurrencyAmount}
-        onValueChange={handleBaseCurrencyValueChange}
-        onAmountChange={handleBaseCurrencyAmountChange}
-        defaultOption={selectValueFromString(exchangerStore.baseCurrencyValue)} />
+        names={store.primaryValues}
+        amount={store.primaryAmount}
+        onValueChange={handleBaseValueChange}
+        onAmountChange={handleBaseAmountChange}
+        defaultOption={selectValueFromString(store.primaryValue)} />
       <View style={styles.spacerH}></View>
       <ExchangeInput
-        currencyNames={exchangerStore.dataCurrencyNames}
-        amount={exchangerStore.currencyAmount}
-        onValueChange={handleCurrencyValueChange}
-        onAmountChange={handleCurrencyAmountChange}
-        defaultOption={selectValueFromString(exchangerStore.currencyValue)} />
+        names={store.secondaryValues}
+        amount={store.secondaryAmount}
+        onValueChange={handleValueChange}
+        onAmountChange={handleAmountChange}
+        defaultOption={selectValueFromString(store.secondaryValue)} />
       <View>
         {
-        exchangerStore.currencies.map(currency => (
-        <View style={styles.currencies} key={currency.baseCurrency + currency.currency}> 
-          <Text style={styles.currencyName}>{currency.baseCurrency}</Text>
-          <Text style={styles.currencyName}>{currency.currency}</Text>
-          <Text style={styles.currencyRate}>{currency.saleRate}</Text>
-          <Text style={styles.currencyRate}>{currency.purchaseRate}</Text>
+        store.rawItems.map(currency => (
+        <View style={styles.currencies} key={currency.primary + currency.secondary}> 
+          <Text style={styles.currencyName}>{currency.primary}</Text>
+          <Text style={styles.currencyName}>{currency.secondary}</Text>
+          <Text style={styles.currencyRate}>{currency.primaryAmount}</Text>
+          <Text style={styles.currencyRate}>{currency.secondaryAmount}</Text>
         </View>)
         )}
       </View>
@@ -80,10 +98,17 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    paddingLeft: 5,
+    paddingHorizontal: 5,
+    // display: "flex",
+    // flexDirection: "row",
+    // justifyContent: "space-between"
+  },
+  modeButtons: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    gap: 5,
+    marginBottom: 10,
   },
   updateButton: {
     backgroundColor: 'blue',

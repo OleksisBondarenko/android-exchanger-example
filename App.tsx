@@ -1,5 +1,5 @@
 
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 import Main from "./src/components/Main";
 import Top from "./src/components/Top";
@@ -8,7 +8,9 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Top />
-      <Main />
+      <ScrollView>
+        <Main />
+      </ScrollView>
     </View>
   );
 }
